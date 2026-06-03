@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="基于AIGC的媒体新闻稿件生成方法及系统">
+  <meta name="author" content="">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+
+  <title>基于AIGC的媒体新闻稿件生成系统</title>
+
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+  <!-- AOS Animation -->
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="assets/css/main.css">
+  <link rel="stylesheet" href="assets/css/chart.css">
+
+</head>
+
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark fixed-top" id="mainNav">
+    <div class="container">
+      <a class="navbar-brand" href="#home">
+        <i class="fa-solid fa-newspaper me-2"></i>AIGC新闻系统
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link" href="#home">首页</a></li>
+          <li class="nav-item"><a class="nav-link" href="#overview">数据概览</a></li>
+          <li class="nav-item"><a class="nav-link" href="#verification">事实验证</a></li>
+          <li class="nav-item"><a class="nav-link" href="#process">系统流程</a></li>
+          <li class="nav-item"><a class="nav-link" href="#features">功能特性</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero-section" id="home">
+    <div class="container">
+      <div class="row align-items-center min-vh-100">
+        <div class="col-lg-6" data-aos="fade-right" data-aos-duration="1000">
+          <div class="hero-content">
+            <h6 class="hero-subtitle">智能 · 高效 · 准确</h6>
+            <h1 class="hero-title">基于AIGC的<br>媒体新闻稿件生成系统</h1>
+            <p class="hero-description">
+              融合先进的人工智能技术，智能识别核心实体、匹配原始素材、验证事实要素，自动生成高质量新闻稿件。
+            </p>
+            <div class="hero-stats">
+              <div class="stat-item">
+                <span class="stat-number">4</span>
+                <span class="stat-label">实体类型</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-number">88</span>
+                <span class="stat-label">素材数量</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-number">45</span>
+                <span class="stat-label">验证通过</span>
+              </div>
+            </div>
+            <div class="hero-buttons">
+              <a href="#overview" class="btn btn-primary btn-lg me-3">
+                <i class="fa-solid fa-chart-pie me-2"></i>查看数据
+              </a>
+              <a href="#features" class="btn btn-outline-light btn-lg">
+                <i class="fa-solid fa-rocket me-2"></i>了解更多
+              </a>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-6" data-aos="fade-left" data-aos-duration="1000" data-aos-delay="200">
+          <div class="hero-visual">
+            <div class="floating-card card-1">
+              <i class="fa-solid fa-brain"></i>
+              <span>智能识别</span>
+            </div>
+            <div class="floating-card card-2">
+              <i class="fa-solid fa-database"></i>
+              <span>数据匹配</span>
+            </div>
+            <div class="floating-card card-3">
+              <i class="fa-solid fa-check-double"></i>
+              <span>事实验证</span>
+            </div>
+            <div class="floating-card card-4">
+              <i class="fa-solid fa-file-lines"></i>
+              <span>稿件生成</span>
+            </div>
+            <div class="hero-circle">
+              <div class="circle-inner">
+                <i class="fa-solid fa-robot"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="hero-shape">
+      <svg viewBox="0 0 1440 320" xmlns="http://www.w3.org/2000/svg">
+        <path fill="#f8f9fa" fill-opacity="1" d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,122.7C672,117,768,139,864,154.7C960,171,1056,181,1152,165.3C1248,149,1344,107,1392,85.3L1440,64L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+      </svg>
+    </div>
+  </section>
+
+  <!-- Data Overview Section -->
+  <section class="overview-section section-padding" id="overview">
+    <div class="container">
+      <div class="section-header text-center" data-aos="fade-up">
+        <h6 class="section-subtitle">数据洞察</h6>
+        <h2 class="section-title">核心数据概览</h2>
+        <div class="section-divider"></div>
+        <p class="section-description">系统对新闻素材进行深度分析，展现智能处理能力</p>
+      </div>
+
+      <div class="row g-4">
+        <!-- 实体类型分布 -->
+        <div class="col-lg-6 col-md-12" data-aos="fade-right" data-aos-duration="800">
+          <div class="chart-card">
+            <div class="card-header">
+              <h5><i class="fa-solid fa-shapes me-2"></i>实体类型分布</h5>
+            </div>
+            <div class="card-body">
+              <canvas id="entityChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- 素材类型占比 -->
+        <div class="col-lg-6 col-md-12" data-aos="fade-left" data-aos-duration="800">
+          <div class="chart-card">
+            <div class="card-header">
+              <h5><i class="fa-solid fa-chart-pie me-2"></i>素材类型占比</h5>
+            </div>
+            <div class="card-body">
+              <canvas id="materialChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 统计卡片 -->
+      <div class="row g-4 mt-4">
+        <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="100">
+          <div class="stat-card stat-card-1">
+            <div class="stat-icon">
+              <i class="fa-solid fa-building"></i>
+            </div>
+            <div class="stat-info">
+              <h3>1</h3>
+              <p>组织机构</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="200">
+          <div class="stat-card stat-card-2">
+            <div class="stat-icon">
+              <i class="fa-solid fa-location-dot"></i>
+            </div>
+            <div class="stat-info">
+              <h3>1</h3>
+              <p>地理位置</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="300">
+          <div class="stat-card stat-card-3">
+            <div class="stat-icon">
+              <i class="fa-regular fa-clock"></i>
+            </div>
+            <div class="stat-info">
+              <h3>1</h3>
+              <p>时间维度</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="400">
+          <div class="stat-card stat-card-4">
+            <div class="stat-icon">
+              <i class="fa-solid fa-lightbulb"></i>
+            </div>
+            <div class="stat-info">
+              <h3>4</h3>
+              <p>事件术语</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Fact Verification Section -->
+  <section class="verification-section section-padding" id="verification">
+    <div class="container">
+      <div class="section-header text-center" data-aos="fade-up">
+        <h6 class="section-subtitle">智能验证</h6>
+        <h2 class="section-title">事实验证分析</h2>
+        <div class="section-divider"></div>
+        <p class="section-description">通过AI技术对新闻素材进行相似度分析和事实验证</p>
+      </div>
+
+      <div class="row g-4">
+        <!-- 相似度分布 -->
+        <div class="col-lg-6 col-md-12" data-aos="fade-right" data-aos-duration="800">
+          <div class="chart-card">
+            <div class="card-header">
+              <h5><i class="fa-solid fa-chart-bar me-2"></i>相似度分布</h5>
+            </div>
+            <div class="card-body">
+              <canvas id="similarityChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- 验证结果 -->
+        <div class="col-lg-6 col-md-12" data-aos="fade-left" data-aos-duration="800">
+          <div class="chart-card">
+            <div class="card-header">
+              <h5><i class="fa-solid fa-circle-check me-2"></i>验证结果统计</h5>
+            </div>
+            <div class="card-body">
+              <canvas id="verificationChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 验证表格 -->
+      <div class="mt-5" data-aos="fade-up" data-aos-duration="800">
+        <div class="table-card">
+          <div class="table-header">
+            <h5><i class="fa-solid fa-table me-2"></i>素材验证详情</h5>
+            <div class="table-controls">
+              <select class="form-select form-select-sm" id="filterType">
+                <option value="all">全部类型</option>
+                <option value="新闻文本">新闻文本</option>
+                <option value="统计数据">统计数据</option>
+                <option value="知识条目">知识条目</option>
+              </select>
+              <select class="form-select form-select-sm" id="filterStatus">
+                <option value="all">全部状态</option>
+                <option value="通过">通过</option>
+                <option value="有冲突但保留">有冲突但保留</option>
+              </select>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>素材内容</th>
+                  <th>类型</th>
+                  <th>相似度</th>
+                  <th>事实要素</th>
+                  <th>验证状态</th>
+                </tr>
+              </thead>
+              <tbody id="verificationTable">
+                <!-- 动态填充 -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- System Process Section -->
+  <section class="process-section section-padding" id="process">
+    <div class="container">
+      <div class="section-header text-center" data-aos="fade-up">
+        <h6 class="section-subtitle">工作流程</h6>
+        <h2 class="section-title">系统处理流程</h2>
+        <div class="section-divider"></div>
+        <p class="section-description">完整的新闻稿件生成自动化流程</p>
+      </div>
+
+      <!-- 流程步骤 -->
+      <div class="process-steps">
+        <div class="row">
+          <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="100">
+            <div class="process-step">
+              <div class="step-number">01</div>
+              <div class="step-icon">
+                <i class="fa-solid fa-magnifying-glass"></i>
+              </div>
+              <h4>实体识别</h4>
+              <p>智能识别新闻文本中的核心实体，包括组织机构、地理位置、时间、事件术语等</p>
+            </div>
+          </div>
+          <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="200">
+            <div class="process-step">
+              <div class="step-number">02</div>
+              <div class="step-icon">
+                <i class="fa-solid fa-layer-group"></i>
+              </div>
+              <h4>素材匹配</h4>
+              <p>从新闻文本、统计数据、知识条目等多维度素材库中智能匹配相关内容</p>
+            </div>
+          </div>
+          <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="300">
+            <div class="process-step">
+              <div class="step-number">03</div>
+              <div class="step-icon">
+                <i class="fa-solid fa-scale-balanced"></i>
+              </div>
+              <h4>事实验证</h4>
+              <p>对匹配到的素材进行相似度分析和事实要素验证，确保内容准确性</p>
+            </div>
+          </div>
+          <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="400">
+            <div class="process-step">
+              <div class="step-number">04</div>
+              <div class="step-icon">
+                <i class="fa-solid fa-file-pen"></i>
+              </div>
+              <h4>稿件生成</h4>
+              <p>基于验证通过的素材，自动生成结构完整、内容准确的新闻稿件</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 流程图表 -->
+      <div class="row g-4 mt-5">
+        <div class="col-lg-6" data-aos="fade-right" data-aos-duration="800">
+          <div class="chart-card">
+            <div class="card-header">
+              <h5><i class="fa-solid fa-chart-line me-2"></i>数据趋势</h5>
+            </div>
+            <div class="card-body">
+              <canvas id="trendChart"></canvas>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-6" data-aos="fade-left" data-aos-duration="800">
+          <div class="chart-card">
+            <div class="card-header">
+              <h5><i class="fa-solid fa-clock me-2"></i>模块耗时分析</h5>
+            </div>
+            <div class="card-body">
+              <canvas id="performanceChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section class="features-section section-padding" id="features">
+    <div class="container">
+      <div class="section-header text-center" data-aos="fade-up">
+        <h6 class="section-subtitle">核心优势</h6>
+        <h2 class="section-title">系统功能特性</h2>
+        <div class="section-divider"></div>
+        <p class="section-description">强大的AI驱动的新闻处理能力</p>
+      </div>
+
+      <div class="row g-4">
+        <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="100">
+          <div class="feature-card">
+            <div class="feature-icon feature-icon-1">
+              <i class="fa-solid fa-brain"></i>
+            </div>
+            <h4>智能实体识别</h4>
+            <p>采用先进的NLP技术，精准识别新闻文本中的各类核心实体，支持多种实体类型</p>
+            <ul class="feature-list">
+              <li><i class="fa-solid fa-check"></i>组织机构识别</li>
+              <li><i class="fa-solid fa-check"></i>地理位置提取</li>
+              <li><i class="fa-solid fa-check"></i>时间维度解析</li>
+              <li><i class="fa-solid fa-check"></i>事件术语识别</li>
+            </ul>
+          </div>
+        </div>
+        <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="200">
+          <div class="feature-card">
+            <div class="feature-icon feature-icon-2">
+              <i class="fa-solid fa-database"></i>
+            </div>
+            <h4>多源素材整合</h4>
+            <p>整合新闻文本、统计数据、知识条目等多类型素材，构建丰富的新闻内容库</p>
+            <ul class="feature-list">
+              <li><i class="fa-solid fa-check"></i>新闻文本处理</li>
+              <li><i class="fa-solid fa-check"></i>统计数据提取</li>
+              <li><i class="fa-solid fa-check"></i>知识图谱构建</li>
+              <li><i class="fa-solid fa-check"></i>智能分类标签</li>
+            </ul>
+          </div>
+        </div>
+        <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="300">
+          <div class="feature-card">
+            <div class="feature-icon feature-icon-3">
+              <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <h4>事实验证保障</h4>
+            <p>通过相似度分析和事实要素验证，确保新闻内容的准确性和可靠性</p>
+            <ul class="feature-list">
+              <li><i class="fa-solid fa-check"></i>相似度智能计算</li>
+              <li><i class="fa-solid fa-check"></i>事实要素提取</li>
+              <li><i class="fa-solid fa-check"></i>冲突检测机制</li>
+              <li><i class="fa-solid fa-check"></i>可信度评估</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12 text-center">
+          <div class="footer-logo">
+            <i class="fa-solid fa-newspaper"></i>
+            <span>AIGC新闻系统</span>
+          </div>
+          <p class="footer-description">基于人工智能的媒体新闻稿件生成方法及系统</p>
+          <div class="footer-social">
+            <a href="#"><i class="fa-brands fa-github"></i></a>
+            <a href="#"><i class="fa-brands fa-linkedin"></i></a>
+            <a href="#"><i class="fa-brands fa-twitter"></i></a>
+          </div>
+          <p class="footer-copyright">© 2024 AIGC News System. All Rights Reserved.</p>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script src="assets/js/main.js"></script>
+
+</body>
+
+</html>

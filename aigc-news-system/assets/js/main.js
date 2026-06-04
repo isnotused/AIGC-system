@@ -48,58 +48,157 @@ document.querySelectorAll('.nav-link[href^="#"]').forEach(link => {
 const dropZone = document.getElementById('fileDropZone');
 const fileInput = document.getElementById('fileInput');
 const fileList = document.getElementById('dropFileList');
+const dropStatus = document.getElementById('dropStatus');
 let uploadedFiles = [];
 
-function addFilesToList(files) {
-  Array.from(files).forEach(file => {
-    if (!uploadedFiles.find(f => f.name === file.name && f.size === file.size)) {
-      uploadedFiles.push(file);
-    }
-  });
-  renderFileList();
+function setStatus(msg, cls) {
+  dropStatus.textContent = msg;
+  dropStatus.className = 'drop-status' + (cls ? ' ' + cls : '');
 }
 
 function renderFileList() {
   fileList.innerHTML = '';
   uploadedFiles.forEach((file, idx) => {
-    const ext = file.name.split('.').pop().toUpperCase();
     const item = document.createElement('div');
     item.className = 'drop-file-item';
     item.innerHTML = `<i class="fa-solid fa-file-lines"></i>${file.name} <span class="remove-file" data-idx="${idx}"><i class="fa-solid fa-xmark"></i></span>`;
     fileList.appendChild(item);
   });
   fileList.querySelectorAll('.remove-file').forEach(btn => {
-    btn.addEventListener('click', function() {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
       uploadedFiles.splice(parseInt(this.dataset.idx), 1);
       renderFileList();
     });
   });
 }
 
+// 解析 CSV 文本为对象数组
+function parseCSV(text) {
+  const lines = text.trim().split(/\r?\n/).filter(Boolean);
+  if (lines.length < 2) return [];
+  const headers = lines[0].split(',').map(h => h.trim());
+  return lines.slice(1).map(line => {
+    const cols = line.split(',').map(c => c.trim());
+    const obj = {};
+    headers.forEach((h, i) => obj[h] = cols[i] || '');
+    return obj;
+  });
+}
+
+// 把任意数据规整成系统所需的验证条目
+function normalizeRecord(raw, idx) {
+  const get = (...keys) => {
+    for (const k of keys) {
+      if (raw[k] !== undefined && raw[k] !== '') return raw[k];
+    }
+    return '';
+  };
+  const content = String(get('content', '素材内容', 'text', '内容', 'title') || `导入条目 #${idx + 1}`);
+  const type = String(get('type', '类型', '素材类型') || '新闻文本');
+  let sim = parseFloat(get('similarity', '相似度', 'score'));
+  if (isNaN(sim)) sim = 0.75 + Math.random() * 0.25;
+  if (sim > 1) sim = sim / 100;
+  const facts = String(get('facts', '事实要素', 'meta') || "{'来源': '导入数据'}");
+  const status = String(get('status', '验证状态', '状态') || (sim >= 0.8 ? '通过' : '有冲突但保留'));
+  return { content, type, similarity: sim, facts, status };
+}
+
+function ingestParsed(records, fileName) {
+  if (!Array.isArray(records) || records.length === 0) {
+    setStatus(`${fileName}：未解析到有效数据`, 'error');
+    return 0;
+  }
+  const normalized = records.map(normalizeRecord);
+  // 注入到全局表格数据
+  if (typeof verificationData !== 'undefined') {
+    verificationData.unshift(...normalized);
+    if (typeof renderTable === 'function') renderTable(verificationData);
+  }
+  return normalized.length;
+}
+
+function readAndProcessFile(file) {
+  return new Promise(resolve => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const text = reader.result;
+      const name = file.name.toLowerCase();
+      let records = [];
+      try {
+        if (name.endsWith('.json')) {
+          const json = JSON.parse(text);
+          records = Array.isArray(json) ? json : (json.data || json.items || json.records || [json]);
+        } else if (name.endsWith('.csv')) {
+          records = parseCSV(text);
+        } else {
+          // TXT：每行一条新闻文本
+          records = text.split(/\r?\n/).filter(l => l.trim()).map(line => ({ content: line, type: '新闻文本' }));
+        }
+      } catch (err) {
+        setStatus(`${file.name} 解析失败：${err.message}`, 'error');
+        resolve(0);
+        return;
+      }
+      resolve(ingestParsed(records, file.name));
+    };
+    reader.onerror = () => { setStatus(`${file.name} 读取失败`, 'error'); resolve(0); };
+    reader.readAsText(file, 'utf-8');
+  });
+}
+
+async function handleIncomingFiles(files) {
+  const arr = Array.from(files);
+  if (arr.length === 0) return;
+  setStatus(`正在解析 ${arr.length} 个文件...`);
+  let total = 0;
+  for (const file of arr) {
+    if (!uploadedFiles.find(f => f.name === file.name && f.size === file.size)) {
+      uploadedFiles.push(file);
+    }
+    total += await readAndProcessFile(file);
+  }
+  renderFileList();
+  if (total > 0) {
+    setStatus(`成功导入 ${total} 条数据，已加入"事实验证"表格`, 'success');
+    // 自动跳到验证页便于查看
+    setTimeout(() => {
+      if (typeof showPage === 'function') showPage('verification');
+    }, 800);
+  }
+}
+
 dropZone.addEventListener('dragover', function(e) {
   e.preventDefault();
+  e.stopPropagation();
   dropZone.classList.add('dragover');
 });
 
 dropZone.addEventListener('dragleave', function(e) {
+  e.preventDefault();
   dropZone.classList.remove('dragover');
 });
 
 dropZone.addEventListener('drop', function(e) {
   e.preventDefault();
+  e.stopPropagation();
   dropZone.classList.remove('dragover');
-  addFilesToList(e.dataTransfer.files);
+  handleIncomingFiles(e.dataTransfer.files);
 });
 
 dropZone.addEventListener('click', function(e) {
-  if (!e.target.classList.contains('drop-browse') && !e.target.classList.contains('remove-file') && !e.target.closest('.remove-file')) {
-    fileInput.click();
-  }
+  if (e.target.closest('.remove-file') || e.target.classList.contains('drop-browse')) return;
+  fileInput.click();
 });
 
 fileInput.addEventListener('change', function() {
-  addFilesToList(this.files);
+  handleIncomingFiles(this.files);
   this.value = '';
+});
+
+// 阻止整页面默认拖放（避免浏览器打开文件）
+['dragover', 'drop'].forEach(ev => {
+  window.addEventListener(ev, e => { if (!e.target.closest('#fileDropZone')) e.preventDefault(); });
 });
 
 // ==================== Chart Configuration ====================

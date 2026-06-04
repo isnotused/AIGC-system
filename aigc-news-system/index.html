@@ -93,10 +93,11 @@
             <div class="file-drop-zone mt-4" id="fileDropZone">
               <div class="drop-zone-inner">
                 <i class="fa-solid fa-cloud-arrow-up drop-icon"></i>
-                <p class="drop-title">拖入数据文件</p>
+                <p class="drop-title">拖入原始素材数据</p>
                 <p class="drop-hint">支持 JSON、CSV、TXT 格式，或 <label for="fileInput" class="drop-browse">点击浏览</label></p>
                 <input type="file" id="fileInput" accept=".json,.csv,.txt" style="display:none" multiple>
               </div>
+              <input type="text" class="topic-guide" id="guideTopic" placeholder="新闻主题（作为引导向量）" value="新能源政策落地实施一周年成效与展望">
               <div class="drop-file-list" id="dropFileList"></div>
               <div class="drop-status" id="dropStatus"></div>
               <!-- 流水线进度 -->

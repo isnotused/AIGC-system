@@ -800,6 +800,19 @@ body {
   z-index: 3;
 }
 
+.topic-guide {
+  width: 100%;
+  margin-top: 0.75rem;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(165,180,252,0.3);
+  border-radius: 10px;
+  color: white;
+  padding: 0.5rem 0.8rem;
+  font-size: 0.85rem;
+}
+.topic-guide::placeholder { color: rgba(255,255,255,0.4); }
+.topic-guide:focus { outline: none; border-color: var(--primary-light); background: rgba(255,255,255,0.12); }
+
 .drop-status {
   margin-top: 0.75rem;
   font-size: 0.85rem;

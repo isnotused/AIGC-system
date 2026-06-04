@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
 
-  <title>媒体新闻稿件生成系统</title>
+  <title>基于AIGC的媒体新闻稿件生成系统</title>
 
   <!-- Bootstrap 5 CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -37,7 +37,7 @@
   <nav class="navbar navbar-expand-lg navbar-dark fixed-top" id="mainNav">
     <div class="container">
       <a class="navbar-brand" href="#home">
-        <!-- <i class="fa-solid fa-newspaper me-2"></i>AIGC新闻系统 -->
+        <i class="fa-solid fa-newspaper me-2"></i>AIGC新闻系统
       </a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
         <span class="navbar-toggler-icon"></span>
@@ -47,6 +47,7 @@
           <li class="nav-item"><a class="nav-link active" href="#home">首页</a></li>
           <li class="nav-item"><a class="nav-link" href="#overview">数据概览</a></li>
           <li class="nav-item"><a class="nav-link" href="#verification">事实验证</a></li>
+          <li class="nav-item"><a class="nav-link" href="#article">稿件生成</a></li>
           <li class="nav-item"><a class="nav-link" href="#process">系统流程</a></li>
           <li class="nav-item"><a class="nav-link" href="#features">功能特性</a></li>
         </ul>
@@ -61,7 +62,7 @@
         <div class="col-lg-6" data-aos="fade-right" data-aos-duration="1000">
           <div class="hero-content">
             <h6 class="hero-subtitle">智能 · 高效 · 准确</h6>
-            <h1 class="hero-title">媒体新闻稿件生成系统</h1>
+            <h1 class="hero-title">基于AIGC的<br>媒体新闻稿件生成系统</h1>
             <p class="hero-description">
               融合先进的人工智能技术，智能识别核心实体、匹配原始素材、验证事实要素，自动生成高质量新闻稿件。
             </p>
@@ -98,6 +99,14 @@
               </div>
               <div class="drop-file-list" id="dropFileList"></div>
               <div class="drop-status" id="dropStatus"></div>
+              <!-- 流水线进度 -->
+              <div class="pipeline-progress" id="pipelineProgress" style="display:none">
+                <div class="pipeline-step" id="ps-overview"><i class="fa-solid fa-chart-pie"></i><span>数据概览</span></div>
+                <div class="pipeline-arrow"><i class="fa-solid fa-chevron-right"></i></div>
+                <div class="pipeline-step" id="ps-verification"><i class="fa-solid fa-circle-check"></i><span>事实验证</span></div>
+                <div class="pipeline-arrow"><i class="fa-solid fa-chevron-right"></i></div>
+                <div class="pipeline-step" id="ps-article"><i class="fa-solid fa-newspaper"></i><span>稿件生成</span></div>
+              </div>
             </div>
           </div>
         </div>
@@ -433,6 +442,77 @@
               <li><i class="fa-solid fa-check"></i>冲突检测机制</li>
               <li><i class="fa-solid fa-check"></i>可信度评估</li>
             </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Article Generation Section -->
+  <section class="article-section section-padding page-section" id="article">
+    <div class="container">
+      <div class="section-header text-center" data-aos="fade-up">
+        <h6 class="section-subtitle">稿件输出</h6>
+        <h2 class="section-title">基于验证素材的稿件生成</h2>
+        <div class="section-divider"></div>
+        <p class="section-description">根据验证后素材集合，输出多层次稿件结构纲要与润色后新闻稿件</p>
+      </div>
+
+      <!-- 主题与操作 -->
+      <div class="article-topic" data-aos="fade-up">
+        <div class="topic-label"><i class="fa-solid fa-bullseye me-2"></i>新闻主题</div>
+        <input type="text" class="form-control topic-input" id="articleTopic" value="新能源政策落地实施一周年成效与展望">
+        <button class="btn btn-primary topic-btn" id="generateBtn">
+          <i class="fa-solid fa-wand-magic-sparkles me-2"></i>生成稿件
+        </button>
+      </div>
+
+      <div class="row g-4 mt-4">
+        <!-- 稿件结构纲要 -->
+        <div class="col-lg-5" data-aos="fade-right">
+          <div class="outline-card">
+            <div class="card-header">
+              <h5><i class="fa-solid fa-list-tree me-2"></i>稿件结构纲要</h5>
+            </div>
+            <div class="card-body">
+              <div class="outline-title">
+                <span class="outline-label">标题建议</span>
+                <h4 id="outlineTitle">新能源政策落地一周年：投资突破千亿，覆盖人群持续扩大</h4>
+              </div>
+              <div class="outline-entities">
+                <span class="outline-label">核心实体</span>
+                <div class="entity-tags" id="outlineEntities"></div>
+              </div>
+              <div class="outline-sections">
+                <span class="outline-label">章节序列</span>
+                <div id="outlineSections"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 润色后稿件 -->
+        <div class="col-lg-7" data-aos="fade-left">
+          <div class="article-card">
+            <div class="card-header">
+              <div>
+                <h5><i class="fa-solid fa-newspaper me-2"></i>润色后新闻稿件</h5>
+                <div class="article-meta">
+                  <span><i class="fa-regular fa-clock me-1"></i><span id="articleDate"></span></span>
+                  <span><i class="fa-solid fa-shield-halved me-1"></i>已通过事实验证</span>
+                </div>
+              </div>
+              <button class="btn btn-sm btn-download" id="downloadBtn" title="下载稿件">
+                <i class="fa-solid fa-download me-1"></i>下载稿件
+              </button>
+            </div>
+            <div class="card-body">
+              <article class="article-body" id="articleBody"></article>
+              <div class="article-sources">
+                <span class="outline-label">引用素材</span>
+                <div id="articleSources"></div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

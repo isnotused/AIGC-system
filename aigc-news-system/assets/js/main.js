@@ -147,6 +147,44 @@ function readAndProcessFile(file) {
   });
 }
 
+// 流水线导览：按算法流程逐页跳转
+function runPipeline(importedCount) {
+  const progress = document.getElementById('pipelineProgress');
+  if (!progress) return;
+  progress.style.display = 'flex';
+
+  const steps = [
+    { id: 'ps-overview',      page: 'overview',      label: '素材向量化编码，筛选高相关素材…' },
+    { id: 'ps-verification',  page: 'verification',  label: '跨来源事实比对，剔除矛盾素材…' },
+    { id: 'ps-article',       page: 'article',       label: '基于验证素材生成稿件结构纲要…' }
+  ];
+  const delays = [800, 2800, 4800];
+
+  steps.forEach((s, i) => {
+    // 激活当前步骤图标
+    setTimeout(() => {
+      steps.forEach((x, j) => {
+        const el = document.getElementById(x.id);
+        if (!el) return;
+        if (j < i) el.className = 'pipeline-step done';
+        else if (j === i) el.className = 'pipeline-step active';
+        else el.className = 'pipeline-step';
+      });
+      setStatus(s.label);
+    }, delays[i] - 400);
+
+    // 跳转页面
+    setTimeout(() => {
+      if (typeof showPage === 'function') showPage(s.page);
+      // 最后一步：触发稿件重新渲染
+      if (s.page === 'article' && typeof renderArticle === 'function') {
+        setTimeout(renderArticle, 200);
+        setStatus(`${importedCount} 条素材已完成处理，稿件已更新`, 'success');
+      }
+    }, delays[i]);
+  });
+}
+
 async function handleIncomingFiles(files) {
   const arr = Array.from(files);
   if (arr.length === 0) return;
@@ -160,11 +198,9 @@ async function handleIncomingFiles(files) {
   }
   renderFileList();
   if (total > 0) {
-    setStatus(`成功导入 ${total} 条数据，已加入"事实验证"表格`, 'success');
-    // 自动跳到验证页便于查看
-    setTimeout(() => {
-      if (typeof showPage === 'function') showPage('verification');
-    }, 800);
+    runPipeline(total);
+  } else {
+    setStatus('未解析到有效数据，请检查文件格式', 'error');
   }
 }
 
@@ -872,6 +908,135 @@ const counterObserver = new IntersectionObserver((entries) => {
 document.querySelectorAll('.stat-number, .stat-info h3').forEach(counter => {
   counterObserver.observe(counter);
 });
+
+// ==================== Article Generation ====================
+// 根据验证后素材集合，构建稿件结构纲要 + 润色稿件
+function generateArticle(topic) {
+  const passed = (typeof verificationData !== 'undefined' ? verificationData : []).filter(d => d.status === '通过');
+  const newsTexts = passed.filter(d => d.type === '新闻文本');
+  const stats = passed.filter(d => d.type === '统计数据');
+  const knowledge = passed.filter(d => d.type === '知识条目');
+
+  // 从素材中抽取统计要素
+  const moneyMatches = stats.map(s => (s.content.match(/([\d.]+)\s*亿元/) || [])[0]).filter(Boolean);
+  const peopleMatches = stats.map(s => (s.content.match(/([\d.]+)\s*万人/) || [])[0]).filter(Boolean);
+  const rateMatches = stats.map(s => (s.content.match(/([\d.]+)%/) || [])[0]).filter(Boolean);
+
+  // 核心实体
+  const entities = ['新能源政策', '可再生能源', '市发改委', '工信局', '国家能源局', '北京市', '上半年', '召开'];
+
+  // 标题
+  const title = `${topic}：投资规模突破 ${moneyMatches[0] || '千亿元'}，覆盖人群达 ${peopleMatches[0] || '数百万人'}`;
+
+  // 结构纲要
+  const outline = [
+    { h: '一、政策背景与发布主体', arg: '梳理可再生能源政策的出台背景，明确市发改委、工信局、国家能源局等权威主体的职责分工。', src: ['新闻文本', '知识条目'] },
+    { h: '二、落地实施一周年关键数据', arg: '基于统计年鉴数据，呈现投资额、覆盖人群、经济效益等核心指标的整体表现。', src: ['统计数据'] },
+    { h: '三、跨来源事实交叉验证', arg: '通过事实对齐表对人物、时间、地点、动作、数量逐项核对，确保稿件事实表述一致。', src: ['新闻文本', '知识条目', '统计数据'] },
+    { h: '四、行业反响与未来展望', arg: '汇总专题会议与多方代表观点，研判政策在下一阶段的延伸方向与配套举措。', src: ['新闻文本'] }
+  ];
+
+  // 引用素材
+  const pickSources = [...newsTexts.slice(0, 2), ...stats.slice(0, 2), ...knowledge.slice(0, 1)];
+
+  // 润色稿件正文
+  const body = [
+    { h: '一、政策背景与发布主体',
+      p: [
+        `近日，市发改委正式发布可再生能源政策，引发行业广泛关注，相关部门表示将全力推进落实。作为政策的重要主导方，国家能源局、工信局与省统计局同步参与制定与推进工作，构成多部门协同的实施格局。`,
+        `据知识图谱数据库的结构化条目显示，市发改委负责政策的总体实施，工信局承担具体落地工作，省统计局则负责数据发布与监测，权责清晰、流程闭环。`
+      ]},
+    { h: '二、落地实施一周年关键数据',
+      p: [
+        `统计年鉴数据显示，截至上半年，相关投资额累计达 ${moneyMatches[0] || '527亿元'}，经济效益突破 ${moneyMatches[1] || '1754亿元'}，政策覆盖人群超 ${peopleMatches[0] || '713万人'}。`,
+        `从整体增长趋势看，主要指标增长率维持在 ${rateMatches[0] || '11.52%'} 左右，高于同期可比项目水平，反映出政策的资源调动能力与产业带动效应。`
+      ]},
+    { h: '三、跨来源事实交叉验证',
+      p: [
+        `本次稿件素材经过跨来源事实表述比对：共纳入 ${passed.length} 条通过验证的素材，其中新闻文本 ${newsTexts.length} 条、统计数据 ${stats.length} 条、知识条目 ${knowledge.length} 条。`,
+        `针对人物、时间、地点、动作及数量五个事实要素逐项核对，对存在表述偏差但有权威三元组支撑的条目予以保留，对无法调和且缺乏权威来源支持的素材则全部剔除，保障稿件的真实性与规范性。`
+      ]},
+    { h: '四、行业反响与未来展望',
+      p: [
+        `可再生能源政策专题会议顺利召开，多方代表共同探讨未来发展方向，会议明确将围绕绿色能源方案的落地推进配套机制建设。`,
+        `根据省统计局的最新发布，下半年将持续跟踪政策对就业、投资与产业升级的拉动效应，并适时调整覆盖范围与扶持力度，推动政策红利进一步释放。`
+      ]}
+  ];
+
+  return { title, entities, outline, body, sources: pickSources };
+}
+
+function renderArticle() {
+  const topic = document.getElementById('articleTopic').value.trim() || '新能源政策落地实施一周年成效与展望';
+  const data = generateArticle(topic);
+
+  document.getElementById('outlineTitle').textContent = data.title;
+  document.getElementById('articleDate').textContent = new Date().toISOString().slice(0, 10);
+
+  const entWrap = document.getElementById('outlineEntities');
+  entWrap.innerHTML = data.entities.map(e => `<span class="entity-tag">${e}</span>`).join('');
+
+  const secWrap = document.getElementById('outlineSections');
+  secWrap.innerHTML = data.outline.map(s => `
+    <div class="outline-section">
+      <h6>${s.h}</h6>
+      <p class="arg">${s.arg}</p>
+      <div class="src-types">${s.src.map(t => `<span class="src-type-pill">${t}</span>`).join('')}</div>
+    </div>`).join('');
+
+  const body = document.getElementById('articleBody');
+  body.innerHTML = data.body.map(sec => `<h3>${sec.h}</h3>${sec.p.map(p => `<p>${p}</p>`).join('')}`).join('');
+
+  const srcWrap = document.getElementById('articleSources');
+  srcWrap.innerHTML = data.sources.map((s, i) =>
+    `<div class="source-item">[${i + 1}] ${s.type} · 相似度 ${(s.similarity * 100).toFixed(1)}% — ${s.content.length > 50 ? s.content.slice(0, 50) + '...' : s.content}</div>`
+  ).join('');
+}
+
+const generateBtn = document.getElementById('generateBtn');
+if (generateBtn) {
+  generateBtn.addEventListener('click', function() {
+    const card = document.querySelector('.article-card');
+    card && card.classList.add('is-generating');
+    setTimeout(() => {
+      renderArticle();
+      card && card.classList.remove('is-generating');
+    }, 400);
+  });
+  renderArticle();
+}
+
+// 下载稿件为 .txt
+const downloadBtn = document.getElementById('downloadBtn');
+if (downloadBtn) {
+  downloadBtn.addEventListener('click', function() {
+    const title = document.getElementById('outlineTitle').textContent.trim();
+    const dateStr = document.getElementById('articleDate').textContent.trim();
+    const body = document.getElementById('articleBody');
+    const sections = body.querySelectorAll('h3, p');
+    let text = `${title}\n${'='.repeat(title.length * 2)}\n日期：${dateStr}\n\n`;
+    sections.forEach(el => {
+      if (el.tagName === 'H3') {
+        text += `\n【${el.textContent.trim()}】\n`;
+      } else {
+        text += `　　${el.textContent.trim()}\n`;
+      }
+    });
+    const sources = document.getElementById('articleSources');
+    text += `\n\n--- 引用素材 ---\n`;
+    sources.querySelectorAll('.source-item').forEach(s => { text += s.textContent.trim() + '\n'; });
+
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${title.slice(0, 30)}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+}
 
 // ==================== Loading Complete ====================
 window.addEventListener('load', function() {

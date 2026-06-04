@@ -15,18 +15,91 @@ window.addEventListener('scroll', function() {
   }
 });
 
-// ==================== Smooth Scroll ====================
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-  anchor.addEventListener('click', function(e) {
+// ==================== Page Navigation ====================
+function showPage(pageId) {
+  document.querySelectorAll('.page-section').forEach(sec => sec.classList.remove('active'));
+  document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+
+  const target = document.getElementById(pageId);
+  if (target) {
+    target.classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }
+
+  const activeLink = document.querySelector(`.nav-link[href="#${pageId}"]`);
+  if (activeLink) activeLink.classList.add('active');
+}
+
+// Wire nav links to page switching
+document.querySelectorAll('.nav-link[href^="#"]').forEach(link => {
+  link.addEventListener('click', function(e) {
     e.preventDefault();
-    const target = document.querySelector(this.getAttribute('href'));
-    if (target) {
-      target.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start'
-      });
+    const pageId = this.getAttribute('href').slice(1);
+    showPage(pageId);
+    // Close mobile nav if open
+    const navCollapse = document.getElementById('navbarNav');
+    if (navCollapse && navCollapse.classList.contains('show')) {
+      navCollapse.classList.remove('show');
     }
   });
+});
+
+// ==================== File Drag and Drop ====================
+const dropZone = document.getElementById('fileDropZone');
+const fileInput = document.getElementById('fileInput');
+const fileList = document.getElementById('dropFileList');
+let uploadedFiles = [];
+
+function addFilesToList(files) {
+  Array.from(files).forEach(file => {
+    if (!uploadedFiles.find(f => f.name === file.name && f.size === file.size)) {
+      uploadedFiles.push(file);
+    }
+  });
+  renderFileList();
+}
+
+function renderFileList() {
+  fileList.innerHTML = '';
+  uploadedFiles.forEach((file, idx) => {
+    const ext = file.name.split('.').pop().toUpperCase();
+    const item = document.createElement('div');
+    item.className = 'drop-file-item';
+    item.innerHTML = `<i class="fa-solid fa-file-lines"></i>${file.name} <span class="remove-file" data-idx="${idx}"><i class="fa-solid fa-xmark"></i></span>`;
+    fileList.appendChild(item);
+  });
+  fileList.querySelectorAll('.remove-file').forEach(btn => {
+    btn.addEventListener('click', function() {
+      uploadedFiles.splice(parseInt(this.dataset.idx), 1);
+      renderFileList();
+    });
+  });
+}
+
+dropZone.addEventListener('dragover', function(e) {
+  e.preventDefault();
+  dropZone.classList.add('dragover');
+});
+
+dropZone.addEventListener('dragleave', function(e) {
+  dropZone.classList.remove('dragover');
+});
+
+dropZone.addEventListener('drop', function(e) {
+  e.preventDefault();
+  dropZone.classList.remove('dragover');
+  addFilesToList(e.dataTransfer.files);
+});
+
+dropZone.addEventListener('click', function(e) {
+  if (!e.target.classList.contains('drop-browse') && !e.target.classList.contains('remove-file') && !e.target.closest('.remove-file')) {
+    fileInput.click();
+  }
+});
+
+fileInput.addEventListener('change', function() {
+  addFilesToList(this.files);
+  this.value = '';
 });
 
 // ==================== Chart Configuration ====================
